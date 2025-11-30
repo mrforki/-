@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💬 چت‌بات دانشجویی </title>
+    <title>💬 چت‌بات دانشجویی — رابط کاربری شیک (با Gemini)</title>
+    <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- فونت گوگل (اختیاری: برای ظاهری مدرن‌تر) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
     <style>
         /* تنظیمات کلی بدنه و طرح */
@@ -14,82 +16,131 @@
         }
         /* استایل‌های بالون پیام‌ها */
         .message-bubble {
-            max-width: 85%; /* افزایش جزئی برای خوانایی بهتر */
-            padding: 12px 18px; /* پدینگ بیشتر برای حس مدرن */
+            max-width: 85%;
+            padding: 12px 18px;
             border-radius: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* سایه کمی ملایم‌تر */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin-bottom: 12px;
             line-height: 1.5;
-            word-wrap: break-word; /* اطمینان از شکستن کلمات طولانی */
+            word-wrap: break-word;
         }
         /* پیام کاربر */
         .user-message {
-            background-color: #4f46e5; /* رنگ آبی/بنفش قوی‌تر (Indigo-600) */
+            background-color: #4f46e5;
             color: white;
             margin-right: 0;
             margin-left: auto;
             text-align: right;
-            border-bottom-left-radius: 0.5rem; /* تیزتر کردن یک گوشه برای تمایز */
+            border-bottom-left-radius: 0.5rem;
         }
         /* پیام ربات */
         .bot-message {
             background-color: #ffffff;
-            color: #1f2937; /* خاکستری تیره */
+            color: #1f2937;
             margin-right: auto;
             margin-left: 0;
             text-align: right;
-            border-bottom-right-radius: 0.5rem; /* تیزتر کردن یک گوشه برای تمایز */
+            border-bottom-right-radius: 0.5rem;
+            /* استایل جدید برای نگه داشتن دکمه TTS */
+            position: relative;
+            padding-left: 50px; /* فضای بیشتر برای دکمه TTS */
         }
+        /* استایل دکمه TTS */
+        .tts-button {
+            position: absolute;
+            top: 50%;
+            right: 8px; /* قرارگیری در سمت راست */
+            transform: translateY(-50%);
+            background-color: #e0e7ff; /* Indigo-100 */
+            color: #4f46e5;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .tts-button:hover:not(.playing) {
+            background-color: #c7d2fe; /* Indigo-200 */
+        }
+        .tts-button.playing {
+            background-color: #ef4444; /* Red-500 */
+            color: white;
+        }
+
         /* استایل اسکرول بار سفارشی */
         #chat-container::-webkit-scrollbar {
             width: 8px;
         }
         #chat-container::-webkit-scrollbar-thumb {
-            background-color: #a7b7c9; /* رنگ خاکستری ملایم */
+            background-color: #a7b7c9;
             border-radius: 10px;
         }
     </style>
 </head>
 
 <body class="flex items-center justify-center min-h-screen p-4">
+    <!-- کانتینر اصلی چت‌بات -->
     <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl flex flex-col h-[90vh] sm:h-[80vh] overflow-hidden ring-1 ring-gray-100">
         
+        <!-- === هدر و نوار بالایی === -->
         <header class="p-4 bg-gradient-to-r from-indigo-600 to-violet-700 text-white shadow-lg flex items-center gap-4 border-b-4 border-indigo-400">
+            <!-- آواتار ربات -->
             <div class="flex-none">
                 <div class="h-12 w-12 rounded-full bg-white/30 flex items-center justify-center ring-2 ring-white/60">
+                    <!-- آیکون ربات (به جای چت) -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2A7 7 0 0 0 5 9v3H4a1 1 0 0 0 0 2h1v1a7 7 0 0 0 14 0v-1h1a1 1 0 0 0 0-2h-1V9a7 7 0 0 0-7-7zM7 9a5 5 0 0 1 10 0v3H7V9zm5 10c-2.206 0-4-1.794-4-4h8c0 2.206-1.794 4-4 4z"/>
                     </svg>
                 </div>
             </div>
 
+            <!-- اطلاعات اصلی -->
             <div class="flex-1">
                 <h1 class="text-xl font-bold leading-snug">🧠 چت‌بات هوش مصنوعی دانشجویی</h1>
                 <p class="text-sm opacity-80 mt-1">
-                    نسخه آزمایشی توسط <span class="font-semibold">محمدحسین تاجیک</span> | وضعیت: آنلاین
+                    ساخته شده توسط <span class="font-semibold">محمدحسین تاجیک</span> | وضعیت: آنلاین
                 </p>
             </div>
 
+            <!-- دکمه اطلاعات -->
             <div class="flex-none">
-                <button onclick="showInfoAlert()" title="درباره سازنده و پروژه" class="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition">
+                <button title="درباره سازنده و پروژه" class="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
                     </svg>
                 </button>
             </div>
         </header>
+        
+        <!-- دکمه‌های ابزار LLM -->
+        <div class="p-3 bg-indigo-50 border-b border-indigo-200 flex justify-start gap-3">
+            <button id="summarize-btn" disabled
+                class="px-4 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition duration-150 disabled:opacity-40 disabled:cursor-not-allowed shadow-md">
+                ✨ خلاصه‌سازی آخرین پیام
+            </button>
+        </div>
 
+
+        <!-- کانتینر پیام‌ها (اسکرول شونده) -->
         <div id="chat-container" class="flex-grow p-4 overflow-y-auto space-y-3 bg-white/50">
+            <!-- پیام خوش‌آمدگویی اولیه (با استایل جدید) -->
             <div class="flex">
                 <div class="bot-message message-bubble">
+                    <button class="tts-button" onclick="speakMessage(this)" title="خواندن پیام (TTS)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                             <path d="M4 18V6c0-1.103.897-2 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6c-1.103 0-2-.897-2-2zM6 6v12h12V6H6zm1 9h2v-4H7v4zm3 0h2v-4h-2v4zm3 0h2v-4h-2v4z"/>
+                        </svg>
+                    </button>
                     <strong>👋 سلام!</strong> من چت‌بات هوش مصنوعی دانشجویی هستم. طراحی شده‌ام تا به سوالات درسی، برنامه‌نویسی و پروژه‌ای شما پاسخ دهم.<br><br>
                     <strong>چطور می‌توانم امروز کمکتان کنم؟</strong>
                 </div>
             </div>
 
-            </div>
+            <!-- پیام‌های مکالمه اینجا اضافه می‌شوند -->
+        </div>
 
+        <!-- کادر ورودی و دکمه ارسال -->
         <footer class="p-4 border-t border-gray-200 bg-white">
+            <!-- پیام وضعیت (مثل "در حال ارسال...") -->
             <div id="message-box" class="hidden text-center p-2 text-sm font-medium bg-indigo-50 text-indigo-700 rounded-xl mb-3 ring-1 ring-indigo-200">
                 در حال پردازش درخواست شما...
             </div>
@@ -102,6 +153,7 @@
                 <button onclick="sendMessage()" id="send-button"
                         class="flex-none p-4 bg-indigo-600 text-white rounded-3xl hover:bg-indigo-700 transition duration-200 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-40 disabled:hover:bg-indigo-600"
                         title="ارسال پیام (Enter)">
+                    <!-- آیکون ارسال (ساده‌تر و زیباتر) -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>
@@ -111,41 +163,253 @@
 
     </div>
 
+    <!-- === اسکریپت جاوااسکریپت === -->
     <script>
+        // متغیرهای ثابت و API Key
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const messageBox = document.getElementById('message-box');
+        const summarizeBtn = document.getElementById('summarize-btn');
+        
+        // توجه: این API_KEY باید در محیط اجرای نهایی توسط Canvas تامین شود.
+        const API_KEY = ""; 
+        const TEXT_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
+        const TTS_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`;
+        
+        let currentAudio = null; // برای ردیابی صدای در حال پخش
 
-        // فرض کنید API شما در این مسیر پاسخ می‌دهد
-        // اگر از فریم‌ورکی مثل Flask یا Django استفاده می‌کنید، این مسیر درست است:
-        const API_URL = '/reply'; 
-
-        // تابع نمایش اطلاعات سازنده
-        function showInfoAlert() {
-            alert('🧑‍💻 این چت‌بات توسط محمدحسین تاجیک (mohmels) برای پروژه دانشجویی توسعه داده شده است.\n\nهدف: آموزش، نمونه‌سازی و استفاده از APIهای رایگان هوش مصنوعی.\nبرای اطلاعات بیشتر به مخزن گیت‌هاب پروژه مراجعه کنید.');
+        // تابع کمکی برای تبدیل Base64 به ArrayBuffer
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
         }
 
-        // تابع ایجاد و نمایش یک پیام جدید در رابط کاربری
-        function displayMessage(text, sender) {
-            const messageWrapper = document.createElement('div');
-            messageWrapper.classList.add('flex', 'p-1'); // پدینگ برای فواصل بهتر
+        // تابع کمکی برای تبدیل PCM به WAV
+        function pcmToWav(pcm16, sampleRate) {
+            const numChannels = 1;
+            const bytesPerSample = 2;
+            const buffer = new ArrayBuffer(44 + pcm16.length * bytesPerSample);
+            const view = new DataView(buffer);
 
-            const messageBubble = document.createElement('div');
-            messageBubble.classList.add('message-bubble', sender === 'user' ? 'user-message' : 'bot-message');
+            // RIFF identifier
+            writeString(view, 0, 'RIFF');
+            // file length (excluding RIFF identifier and file length)
+            view.setUint32(4, 36 + pcm16.length * bytesPerSample, true);
+            // 'WAVE' identifier
+            writeString(view, 8, 'WAVE');
+            // 'fmt ' chunk identifier
+            writeString(view, 12, 'fmt ');
+            // fmt chunk length (16 for PCM)
+            view.setUint32(16, 16, true);
+            // sample format (1 for PCM)
+            view.setUint16(20, 1, true);
+            // number of channels
+            view.setUint16(22, numChannels, true);
+            // sample rate
+            view.setUint32(24, sampleRate, true);
+            // byte rate
+            view.setUint32(28, sampleRate * numChannels * bytesPerSample, true);
+            // block align
+            view.setUint16(32, numChannels * bytesPerSample, true);
+            // bits per sample
+            view.setUint16(34, 16, true);
+            // 'data' chunk identifier
+            writeString(view, 36, 'data');
+            // data chunk length
+            view.setUint32(40, pcm16.length * bytesPerSample, true);
 
-            // تبدیل خطوط جدید \n به <br> برای نمایش درست در HTML
-            const formattedText = text.replace(/\n/g, '<br>');
-            messageBubble.innerHTML = formattedText;
+            // Write PCM data
+            let offset = 44;
+            for (let i = 0; i < pcm16.length; i++) {
+                view.setInt16(offset, pcm16[i], true);
+                offset += 2;
+            }
 
-            messageWrapper.appendChild(messageBubble);
-            chatContainer.appendChild(messageWrapper);
+            return new Blob([buffer], { type: 'audio/wav' });
 
-            // اسکرول کردن به پایین برای دیدن آخرین پیام
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            function writeString(view, offset, str) {
+                for (let i = 0; i < str.length; i++) {
+                    view.setUint8(offset + i, str.charCodeAt(i));
+                }
+            }
         }
 
-        // تابع اصلی ارسال پیام به API بک‌اند
+
+        // تابع کمکی برای هندل کردن Exponential Backoff در فراخوانی API
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status !== 429 && response.status < 500) {
+                        return response;
+                    }
+                } catch (error) {
+                    // در صورت خطای شبکه، ادامه به سمت Backoff
+                }
+
+                // Exponential Backoff
+                const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+            throw new Error("API call failed after multiple retries.");
+        }
+
+
+        // تابع برای تولید صدا (TTS)
+        async function speakMessage(button) {
+            // توقف هر صدای در حال پخش
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                document.querySelectorAll('.tts-button').forEach(btn => btn.classList.remove('playing'));
+                if (currentAudio.button === button) {
+                    currentAudio = null;
+                    return; // اگر دوباره روی دکمه در حال پخش کلیک شد، متوقف کن و خارج شو
+                }
+            }
+
+            button.classList.add('playing');
+            button.disabled = true;
+
+            const messageElement = button.parentElement;
+            // پاک کردن <br> و تبدیل به متن ساده
+            const textToSpeak = messageElement.innerText.replace(/[\n]/g, ' ').trim(); 
+
+            // Payload برای TTS
+            const payload = {
+                contents: [{
+                    parts: [{ text: `Say in a clear Persian accent: ${textToSpeak}` }] // تاکید بر فارسی بودن
+                }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: { voiceName: "Achird" } // صدای دوستانه
+                        }
+                    }
+                },
+                model: "gemini-2.5-flash-preview-tts"
+            };
+
+            try {
+                const response = await fetchWithRetry(TTS_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) throw new Error(`TTS API failed: ${response.status}`);
+                
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+
+                if (audioData && mimeType && mimeType.startsWith("audio/L16")) {
+                    // استخراج Sample Rate از MimeType
+                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 16000;
+                    
+                    const pcmData = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmData);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    
+                    const audio = new Audio(audioUrl);
+                    currentAudio = audio;
+                    currentAudio.button = button; // ردیابی دکمه مربوطه
+
+                    audio.onended = () => {
+                        button.classList.remove('playing');
+                        button.disabled = false;
+                        currentAudio = null;
+                    };
+                    audio.play();
+
+                } else {
+                    console.error("TTS response missing audio data or unexpected mime type:", mimeType);
+                    // NOTE: Removed alert() as per instructions.
+                }
+
+            } catch (error) {
+                console.error("خطا در TTS:", error);
+                // NOTE: Removed alert() as per instructions.
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+
+        // تابع برای خلاصه‌سازی متن (LLM)
+        async function summarizeLastBotMessage() {
+            const lastBotMessage = getLastBotMessageText();
+            if (!lastBotMessage) {
+                // NOTE: Removed alert() as per instructions.
+                return;
+            }
+
+            summarizeBtn.disabled = true;
+            const originalButtonText = summarizeBtn.textContent;
+            summarizeBtn.textContent = "در حال خلاصه‌سازی...";
+            
+            const systemPrompt = "You are a helpful study assistant. Summarize the following academic or technical text concisely in Persian for a university student. Keep the summary to a maximum of 3 sentences.";
+            const userQuery = lastBotMessage;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const response = await fetchWithRetry(TEXT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) throw new Error(`Summary API failed: ${response.status}`);
+
+                const result = await response.json();
+                const summaryText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (summaryText) {
+                    displayMessage(`خلاصه (✨):\n\n${summaryText}`, 'bot');
+                } else {
+                    displayMessage(`متأسفانه نتوانستم خلاصه کنم.`, 'bot');
+                }
+
+            } catch (error) {
+                console.error("خطا در خلاصه‌سازی:", error);
+                displayMessage(`⚠️ خطای سرویس خلاصه‌سازی.`, 'bot');
+            } finally {
+                summarizeBtn.textContent = originalButtonText;
+                summarizeBtn.disabled = false;
+            }
+        }
+
+
+        // تابع کمکی برای استخراج متن آخرین پیام ربات
+        function getLastBotMessageText() {
+            const botMessages = chatContainer.querySelectorAll('.bot-message');
+            if (botMessages.length === 0) return null;
+            
+            // آخرین پیام ربات
+            const lastMessageElement = botMessages[botMessages.length - 1];
+            // برای استخراج متن خالص، باید دکمه TTS را حذف کنیم
+            const clone = lastMessageElement.cloneNode(true);
+            clone.querySelector('.tts-button')?.remove();
+            
+            // جایگزینی <br> با \n برای پردازش متن توسط LLM
+            return clone.innerHTML.replace(/<br\s*\/?>/gi, '\n').trim();
+        }
+
+        // تابع اصلی ارسال پیام به API بک‌اند (برای چت)
         async function sendMessage() {
             const message = userInput.value.trim();
 
@@ -160,12 +424,13 @@
             // 2. غیرفعال کردن ورودی و نمایش پیام وضعیت
             userInput.disabled = true;
             sendButton.disabled = true;
+            summarizeBtn.disabled = true;
             messageBox.textContent = 'در حال پردازش درخواست شما...';
             messageBox.classList.remove('hidden');
 
             try {
-                // 3. ارسال درخواست به بک‌اند (API)
-                const response = await fetch(API_URL, {
+                // 3. ارسال درخواست به بک‌اند (API چت اصلی)
+                const response = await fetchWithRetry(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_message: message })
@@ -176,7 +441,6 @@
                 }
 
                 const data = await response.json();
-                // فرض می‌کنیم پاسخ API در فیلد 'response' است
                 const botResponse = data.response || "متأسفانه نتوانستم پاسخی پیدا کنم. لطفاً دوباره تلاش کنید.";
                 
                 // 4. نمایش پاسخ ربات
@@ -189,14 +453,56 @@
                 // 5. فعال‌سازی مجدد
                 userInput.disabled = false;
                 sendButton.disabled = false;
+                summarizeBtn.disabled = false; // فعال‌سازی مجدد دکمه خلاصه‌سازی
                 messageBox.classList.add('hidden');
-                userInput.focus(); // فوکوس روی کادر ورودی
+                userInput.focus(); 
             }
         }
+
+        // تابع ایجاد و نمایش یک پیام جدید در رابط کاربری
+        function displayMessage(text, sender) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('flex', 'p-1'); 
+
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('message-bubble', sender === 'user' ? 'user-message' : 'bot-message');
+
+            // تبدیل خطوط جدید \n به <br> برای نمایش درست در HTML
+            const formattedText = text.replace(/\n/g, '<br>');
+            messageBubble.innerHTML = formattedText;
+            
+            // افزودن دکمه TTS فقط برای پیام‌های ربات
+            if (sender === 'bot') {
+                const ttsButton = document.createElement('button');
+                ttsButton.classList.add('tts-button');
+                ttsButton.setAttribute('onclick', 'speakMessage(this)');
+                ttsButton.setAttribute('title', 'خواندن پیام (TTS)');
+                ttsButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+                    </svg>
+                `;
+                messageBubble.appendChild(ttsButton);
+                
+                // فعال‌سازی دکمه خلاصه‌سازی پس از دریافت اولین پیام ربات
+                summarizeBtn.disabled = false;
+            }
+
+            messageWrapper.appendChild(messageBubble);
+            chatContainer.appendChild(messageWrapper);
+
+            // اسکرول کردن به پایین برای دیدن آخرین پیام
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // افزودن شنونده رویداد به دکمه خلاصه‌سازی
+        summarizeBtn.addEventListener('click', summarizeLastBotMessage);
 
         // فوکوس روی کادر ورودی هنگام بارگذاری صفحه
         window.onload = () => {
             userInput.focus();
+            // غیرفعال کردن دکمه خلاصه‌سازی در شروع تا زمانی که اولین پیام ربات دریافت شود
+            summarizeBtn.disabled = true; 
         };
     </script>
 </body>
