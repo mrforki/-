@@ -1,20 +1,13 @@
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
-# نیازی به وارد کردن این موارد نیست مگر برای تنظیمات پیشرفته
-# from google.generativeai.types import HarmCategory, HarmBlockThreshold 
 
 load_dotenv()  # بارگذاری متغیرهای محیطی از فایل .env
 
 # بررسی کلید API به صورت سراسری
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-<<<<<<< HEAD
 model = None # تعریف اولیه مدل
 SETUP_ERROR = None # متغیر جدید برای نگهداری پیام خطای تنظیمات
-=======
-model = None
-SETUP_ERROR = None
->>>>>>> 33e1c34d25a0dc122fb8de413f2b9404fb2f84fb
 
 if not GEMINI_API_KEY:
     print("⚠️ خطا: متغیر محیطی GEMINI_API_KEY تنظیم نشده است!")
@@ -24,20 +17,7 @@ else:
         # تنظیم کلاینت Gemini
         genai.configure(api_key=GEMINI_API_KEY)
 
-<<<<<<< HEAD
-        # ساخت مدل با پرامپت سیستم
-        model = genai.GenerativeModel(
-            'gemini-2.5-flash',
-            system_instruction="تو یک دستیار مفید و باهوش هستی که به زبان فارسی پاسخ می‌دی و سوالات دانشجویی پاسخ میدی."
-        )
-    except Exception as e:
-        print(f"⚠️ خطا در تنظیم Gemini API: {str(e)}")
-        # در صورت شکست، پیام خطای دقیق را ذخیره می‌کنیم
-        SETUP_ERROR = f"خطا در تنظیمات اولیه مدل (API Key نامعتبر یا سرویس): {str(e)}"
-        # در صورت شکست، مدل همچنان None خواهد بود
-=======
-        # ساخت مدل با دستورالعمل دقیق (شامل معرفی سازنده)
-        # ابزار جستجو حذف شده است تا از خطای FunctionDeclaration جلوگیری شود.
+        # ساخت مدل با دستورالعمل دقیق
         model = genai.GenerativeModel(
             'gemini-2.5-flash',
             system_instruction="""تو یک دستیار هوشمند و دلسوز دانشجویان هستی که به زبان فارسی پاسخ می‌دهی.
@@ -52,49 +32,25 @@ else:
     except Exception as e:
         print(f"⚠️ خطا در تنظیم Gemini API: {str(e)}")
         SETUP_ERROR = f"خطا در تنظیمات اولیه مدل: {str(e)}"
->>>>>>> 33e1c34d25a0dc122fb8de413f2b9404fb2f84fb
 
 def get_reply_user(user_text: str) -> str:
     """
     این تابع متن کاربر رو می‌گیره و از Google Gemini پاسخ واقعی می‌گیره.
     """
-<<<<<<< HEAD
-    # بررسی مدل قبل از استفاده (برای مدیریت خطای API Key)
+    # بررسی مدل قبل از استفاده
     if model is None:
-        # استفاده از SETUP_ERROR برای نمایش دلیل دقیق شکست
         detailed_error = SETUP_ERROR if SETUP_ERROR else "خطای نامشخص در تنظیمات."
         return f"⚠️ خطای تنظیمات بک‌اند: {detailed_error} لطفاً فایل‌های پیکربندی و کلید API را بررسی کنید."
 
     try:
-        # استفاده از ابزار جستجوی گوگل برای پاسخ‌های به‌روز (با tools=[{"google_search": {}}])
-        response = model.generate_content(
-            user_text,
-            tools=[{"google_search": {}}]
-        )
+        # 🟢 نسخه صحیح بدون ابزار جستجو
+        response = model.generate_content(user_text) 
         
         # بررسی محتوای پاسخ
-        if response.text:
-            return response.text.strip()
-        else:
-            return "پاسخی از مدل دریافت نشد. شاید به دلیل محتوای نامناسب مسدود شده باشد."
-
-    except Exception as e:
-        # خطای زمان اجرای API
-=======
-    # بررسی مدل قبل از استفاده
-    if model is None:
-        detailed_error = SETUP_ERROR if SETUP_ERROR else "خطای نامشخص در تنظیمات."
-        return f"⚠️ خطای تنظیمات بک‌اند: {detailed_error} لطفاً کلید API را بررسی کنید."
-
-    try:
-        # 🟢 نکته حیاتی: ابزار جستجو حذف شد
-        response = model.generate_content(user_text)
+        if response.candidates and response.candidates[0].finish_reason.name == 'SAFETY':
+             return "⚠️ به دلیل خط‌مشی‌های ایمنی، امکان پاسخگویی به این سوال وجود ندارد."
         
-        if response.text:
-            return response.text.strip()
-        else:
-            return "پاسخی دریافت نشد."
-
+        return response.text.strip()
+    
     except Exception as e:
->>>>>>> 33e1c34d25a0dc122fb8de413f2b9404fb2f84fb
         return f"خطا در گرفتن پاسخ از Gemini: {str(e)}"
