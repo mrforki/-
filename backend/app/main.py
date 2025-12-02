@@ -145,7 +145,8 @@ async def generate_tts(data: TTSRequest):
         if not audio_part:
             raise RuntimeError("ساختار پاسخ صوتی معتبر نیست.")
 
-        if audio_part.mime_type != "audio/L16;rate=24000":
+        # پذیرش هر دو MIME جدید و قدیم
+        if audio_part.mime_type not in ["audio/L16;rate=24000", "audio/L16;codec=pcm;rate=24000"]:
             raise RuntimeError(f"MIME اشتباه: {audio_part.mime_type}")
 
         pcm_bytes = base64.b64decode(audio_part.data)
