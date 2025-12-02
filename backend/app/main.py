@@ -149,10 +149,24 @@ async def generate_tts(data: TTSRequest):
     try:
         response = tts_model.generate_content(**tts_payload, tools=[])
         
+        # --- اعمال بررسی‌های ساختاری قوی‌تر ---
+        if not (response.candidates and 
+                response.candidates[0].content and 
+                response.candidates[0].content.parts and 
+                response.candidates[0].content.parts[0].inlineData):
+            
+            # اگر ساختار مورد انتظار برای داده صوتی وجود ندارد (مثلاً محتوا ایمنی را نقض کرده است)
+            print("TTS structure error: Inline audio data is missing in the response.")
+            # یک خطای توصیفی‌تر برای کاربر ارسال می‌کنیم.
+            raise HTTPException(status_code=500, 
+                                detail="TTS model returned an invalid structure. It might be due to safety violation or an empty response.")
+
+
         audio_part = response.candidates[0].content.parts[0].inlineData
         
-        if not audio_part or audio_part.mimeType != "audio/L16;rate=24000":
-            raise HTTPException(status_code=500, detail="Invalid audio response from TTS model.")
+        if audio_part.mimeType != "audio/L16;rate=24000":
+            # این بررسی مهم است
+            raise HTTPException(status_code=500, detail=f"Invalid audio mimeType: {audio_part.mimeType}")
 
         pcm_data_base64 = audio_part.data
         pcm_data_bytes = base64.b64decode(pcm_data_base64)
@@ -166,7 +180,8 @@ async def generate_tts(data: TTSRequest):
 
     except Exception as e:
         print(f"Error during TTS generation: {e}")
-        raise HTTPException(status_code=500, detail=f"TTS processing failed: {str(e)}")
+        # اطمینان از اینکه پیام خطا در کنسول مفید است
+        raise HTTPException(status_code=500, detail=f"TTS processing failed due to an unexpected error: {str(e)}")
 
 
 # ۴. روت API جدید برای خلاصه‌سازی متن
