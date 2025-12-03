@@ -105,19 +105,19 @@ def reply(data: UserMessage):
 # --------------------------- TTS ---------------------------
 
 from fastapi.responses import StreamingResponse
+import base64
 
 @app.post("/tts")
 async def generate_tts_stream(data: TTSRequest):
     global tts_model_client, SETUP_ERROR
-
+    
     if not tts_model_client or SETUP_ERROR:
         raise HTTPException(status_code=500, detail=str(SETUP_ERROR))
 
-    text_to_speak = data.text[:300]
+    text_to_speak = data.text[:400]
 
     try:
-        # درخواست از مدل با حالت استریم
-        response = tts_model_client.generate_content(
+        response_stream = tts_model_client.generate_content(
             contents=[{"parts": [{"text": text_to_speak}]}],
             generation_config={
                 "response_modalities": ["AUDIO"],
@@ -132,24 +132,20 @@ async def generate_tts_stream(data: TTSRequest):
             stream=True
         )
 
-        async def audio_generator():
-            """ صدا را چانک‌به‌چانک ارسال می‌کند تا Railway قطع نکند """
-            for chunk in response:
-                if not chunk or not chunk.candidates:
+        async def stream_audio():
+            for chunk in response_stream:
+                if not chunk.candidates:
                     continue
-
+                
                 parts = chunk.candidates[0].content.parts
                 for p in parts:
                     if hasattr(p, "inline_data") and p.inline_data:
-                        try:
-                            pcm_bytes = base64.b64decode(p.inline_data.data)
-                            wav_bytes = pcm_to_wav(pcm_bytes, 24000)
-                            yield wav_bytes
-                        except Exception:
-                            continue
+                        pcm_bytes = base64.b64decode(p.inline_data.data)
+                        wav_bytes = pcm_to_wav(pcm_bytes, sample_rate=24000)
+                        yield wav_bytes
 
-        return StreamingResponse(audio_generator(), media_type="audio/wav")
-
+        return StreamingResponse(stream_audio(), media_type="audio/wav")
+    
     except Exception as e:
         import traceback
         traceback.print_exc()
