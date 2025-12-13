@@ -3,166 +3,211 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>💡 چت‌بات دانشجویی هوشمند  </title>
-    <!-- استفاده از CDN تیل‌ویند -->
+    <title>🤖 چت‌بات دانشجویی هوشمند</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* تعریف متغیرهای رنگی برای استفاده راحت‌تر */
-        :root {
-            --primary-color: #00bcd4; /* Teal/Cyan */
-            --primary-dark: #0097a7;
-            --secondary-color: #7c3aed; /* Deep Purple */
-            --bg-light: #f5f8ff; /* Very Light Background */
-            --bg-surface: #ffffff;
-        }
-
         body { 
             font-family: 'Vazirmatn', Tahoma, sans-serif; 
-            background: var(--bg-light); 
-            /* Soft background gradient */
-            background: linear-gradient(135deg, #eef2f8 0%, #e0f7fa 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
-        .chat-main-container { 
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 10px rgba(0, 0, 0, 0.05); 
-            border: 1px solid #e0e0e0;
+        .chat-container { 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
-        /* Message Bubbles */
         .message-bubble { 
-            max-width: 90%; 
+            max-width: 85%; 
             padding: 14px 20px; 
-            border-radius: 1.75rem; 
+            border-radius: 20px; 
             line-height: 1.6; 
             word-wrap: break-word; 
-            font-size: 1rem;
+            animation: fadeIn 0.3s ease-in;
         }
 
-        /* User Message: Primary Teal */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .user-message { 
-            background: var(--primary-color); 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff; 
             margin-left: auto; 
-            text-align: right; 
-            border-bottom-right-radius: 0.75rem; 
-            box-shadow: 0 4px 10px rgba(0, 188, 212, 0.3);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
-        /* Bot Message: White surface */
         .bot-message { 
-            background: var(--bg-surface); 
-            color: #1f2937; 
+            background: #f7fafc;
+            color: #2d3748; 
             margin-right: auto; 
-            text-align: right; 
-            border-bottom-left-radius: 0.75rem; 
-            border: 1px solid #cfd8dc;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
         }
 
-        /* Action Buttons (Summarize only) */
-        .action-buttons { margin-bottom: 8px; flex-wrap: wrap; }
         .action-button { 
             padding: 8px 14px; 
             font-size: 0.85rem; 
-            color: var(--secondary-color); /* Purple */
-            background: #ede9fe; /* Light Purple Background */
-            border-radius: 0.75rem; 
+            color: #667eea;
+            background: #edf2f7;
+            border-radius: 12px; 
             border: none; 
             cursor: pointer; 
             transition: all 0.2s; 
-            font-weight: 600; 
-            box-shadow: 0 2px 4px rgba(124, 58, 237, 0.1);
+            font-weight: 600;
         }
-        .action-button:hover:not(:disabled) { 
-            background: #dcd7fa; /* Lighter Purple on hover */
-        }
-        .action-button.loading { cursor: not-allowed; opacity: 0.6; background: #f3f4f6; color: #9ca3af; }
-        .action-button:disabled { opacity: 0.4; cursor: not-allowed; }
-
-        /* Custom scrollbar (Purple) */
-        #chat-container::-webkit-scrollbar { width: 6px; } 
-        #chat-container::-webkit-scrollbar-thumb { background-color: var(--secondary-color); border-radius: 10px; }
-        #chat-container::-webkit-scrollbar-track { background: var(--bg-light); }
         
-        /* FIX for VS Code error: Define custom focus style outside the element */
-        #user-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.4); /* primary color ring */
+        .action-button:hover:not(:disabled) { 
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+        
+        .action-button:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+        }
+
+        #chat-container::-webkit-scrollbar { width: 8px; } 
+        #chat-container::-webkit-scrollbar-thumb { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px; 
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glow-button {
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s;
+        }
+
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
-    <div class="w-full max-w-lg bg-white rounded-3xl chat-main-container flex flex-col h-[95vh] sm:h-[85vh] overflow-hidden">
+    <div class="w-full max-w-2xl chat-container rounded-3xl flex flex-col h-[95vh] sm:h-[90vh] overflow-hidden">
         
         <!-- Header -->
-        <header class="p-5 bg-white border-b border-gray-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-full flex items-center justify-center ring-2 ring-opacity-50" 
-                    style="background: #e0f7fa; color: var(--primary-color); border-color: var(--primary-color);">
-                    <!-- Icon: Teal -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary-color);">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 2A7 7 0 0 0 5 9v3H4a1 1 0 0 0 0 2h1v1a7 7 0 0 0 14 0v-1h1a1 1 0 0 0 0-2h-1V9a7 7 0 0 0-7-7zM7 9a5 5 0 0 1 10 0v3H7V9zm5 10c-2.206 0-4-1.794-4-4h8c0 2.206-1.794 4-4 4z"/>
-                    </svg>
+        <header class="p-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-white opacity-10"></div>
+            <div class="relative flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl">
+                        🤖
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold">چت‌بات دانشجویی</h1>
+                        <p class="text-sm opacity-90 mt-1 flex items-center gap-2">
+                            <span class="h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+                            آنلاین | Powered by OpenRouter
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-xl font-extrabold text-gray-800">چت‌بات دانشجویی هوشمند</h1>
-                    <p class="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                        <!-- Online Status: Purple -->
-                        <span class="h-2 w-2 rounded-full animate-pulse" style="background: var(--secondary-color);"></span>
-                        <span>آنلاین | مبتنی بر Gemini 2.5 Flash</span>
-                    </p>
-                </div>
-            </div>
 
-            <!-- Developer Info Button: Purple -->
-            <button onclick="displayDeveloperInfo()" title="درباره سازنده و پروژه" 
-                class="p-2 rounded-full transition ring-1 ring-opacity-50"
-                style="background: #eef2ff; color: var(--secondary-color); border-color: var(--secondary-color);">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/>
-                </svg>
-            </button>
+                <button onclick="showAbout()" class="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </button>
+            </div>
         </header>
 
         <!-- Chat Container -->
-        <div id="chat-container" class="flex-grow p-5 overflow-y-auto space-y-4" style="background: var(--bg-light);">
-            <!-- Welcome Message -->
+        <div id="chat-container" class="flex-grow p-6 overflow-y-auto space-y-4 bg-gradient-to-b from-gray-50 to-white">
             <div class="flex">
                 <div class="bot-message message-bubble">
-                    <strong>👋 سلام!</strong> من دستیار هوشمند شما برای سوالات درسی، برنامه‌نویسی و پروژه‌های دانشگاهی هستم.<br><br>
-                    <strong>چطور می‌توانم امروز کمکتان کنم؟</strong>
-                </div>
-            </div>
-            <!-- Developer Info Message (Hidden) -->
-            <div id="dev-info-message" class="flex hidden">
-                <div class="message-bubble text-sm" style="background: #fff3e0; color: #ff9800; border: 1px solid #ffcc80;">
-                    <p class="font-bold">✨ اطلاعات توسعه‌دهنده</p>
-                    <p class="mt-2">من توسط **محمدحسین تاجیک** با استفاده از هوش مصنوعی گوگل (Gemini) توسعه داده شده‌ام. هدف من کمک به رشد تحصیلی شماست. می‌تونی محمدحسین رو در اینستاگرام دنبال کنی: <a href="https://www.instagram.com/mohmels/" target="_blank" class="underline hover:opacity-80" style="color: var(--primary-dark);">https://www.instagram.com/mohmels/</a></p>
+                    <strong>👋 سلام و خوش آمدید!</strong><br><br>
+                    من چت‌بات هوشمند دانشجویی هستم. آماده‌ام تا در زمینه‌های زیر به شما کمک کنم:<br><br>
+                    📚 سوالات درسی و تحصیلی<br>
+                    💻 برنامه‌نویسی و پروژه‌ها<br>
+                    🎯 راهنمایی تحصیلی<br><br>
+                    <strong>سوال خود را بپرسید!</strong>
                 </div>
             </div>
         </div>
 
-        <!-- Footer and Input Form -->
-        <footer class="p-4 border-t border-gray-200 bg-white">
-            <!-- Error/Status Message: Teal -->
-            <div id="message-box" class="hidden text-center p-2 text-sm font-semibold rounded-xl mb-3 ring-1" style="background: #e0f7fa; color: var(--primary-dark); border-color: var(--primary-color);">در حال پردازش درخواست شما...</div>
+        <!-- Input Footer -->
+        <footer class="p-6 border-t border-gray-200 bg-white">
+            <div id="message-box" class="hidden text-center p-3 text-sm font-medium bg-purple-50 text-purple-700 rounded-xl mb-4 flex items-center justify-center gap-2">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+                <span>در حال پردازش...</span>
+            </div>
+            
             <div class="flex items-center gap-3">
-                <input type="text" id="user-input" placeholder="سوال خود را اینجا بنویسید..."
-                    class="flex-grow p-4 text-gray-700 border border-gray-300 rounded-full focus:outline-none focus:ring-4 focus:ring-opacity-40 transition duration-200 shadow-sm"
+                <input type="text" id="user-input" placeholder="سوال خود را بنویسید..."
+                    class="flex-grow p-4 text-gray-700 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-200 focus:border-purple-400 transition duration-200"
                     onkeydown="if(event.key === 'Enter') sendMessage()">
                 
-                <!-- Send Button: Primary Teal -->
                 <button onclick="sendMessage()" id="send-button"
-                    class="flex-none p-3 text-white rounded-full hover:opacity-90 transition duration-200 ease-in-out shadow-lg hover:shadow-xl disabled:opacity-40 disabled:hover:bg-opacity-100"
-                    style="background: var(--primary-color);"
-                    title="ارسال پیام (Enter)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 transform -rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    class="glow-button flex-none p-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl hover:from-purple-700 hover:to-indigo-700 transition duration-200 disabled:opacity-50"
+                    title="ارسال (Enter)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>
                 </button>
             </div>
+
+            <div class="mt-3 text-center text-xs text-gray-500">
+                ساخته شده با ❤️ توسط <a href="https://www.instagram.com/mohmels/" target="_blank" class="gradient-text font-semibold hover:underline">محمدحسین تاجیک</a>
+            </div>
         </footer>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onclick="hideAbout(event)">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold gradient-text mb-4">درباره چت‌بات</h2>
+            <p class="text-gray-700 leading-relaxed mb-4">
+                این چت‌بات با استفاده از OpenRouter AI و مدل‌های پیشرفته هوش مصنوعی توسعه یافته است.
+            </p>
+            <div class="bg-purple-50 p-4 rounded-xl mb-4">
+                <p class="text-sm text-gray-700">
+                    <strong>توسعه‌دهنده:</strong> محمدحسین تاجیک<br>
+                    <strong>تکنولوژی:</strong> OpenRouter AI + FastAPI<br>
+                    <strong>مدل:</strong> Google Gemini 2.0 Flash (Free)
+                </p>
+            </div>
+            <a href="https://www.instagram.com/mohmels/" target="_blank" 
+               class="block w-full text-center p-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition">
+                📸 دنبال کنید در اینستاگرام
+            </a>
+            <button onclick="hideAbout()" class="mt-3 w-full p-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition">
+                بستن
+            </button>
+        </div>
     </div>
 
     <script>
@@ -170,42 +215,34 @@
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const messageBox = document.getElementById('message-box');
-        const devInfoMessage = document.getElementById('dev-info-message');
+        const aboutModal = document.getElementById('about-modal');
 
         const API_URL = '/reply';
         const SUMMARIZE_URL = '/summarize';
 
-        let isDevInfoVisible = false;
-
-        // --- نمایش اطلاعات توسعه‌دهنده ---
-        function displayDeveloperInfo() {
-            if (isDevInfoVisible) {
-                devInfoMessage.classList.add('hidden');
-            } else {
-                devInfoMessage.classList.remove('hidden');
-                chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll down
-            }
-            isDevInfoVisible = !isDevInfoVisible;
+        function showAbout() {
+            aboutModal.classList.remove('hidden');
         }
 
+        function hideAbout(event) {
+            if (!event || event.target === aboutModal) {
+                aboutModal.classList.add('hidden');
+            }
+        }
 
-        // --- تبدیل متن (اضافه کردن قابلیت نمایش کد) ---
         function renderMarkdownAndLinks(text) {
             let html = text.replace(/\n/g, '<br>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            // Links
             const urlRegex = /(https?:\/\/[^\s<>]+)/g;
             html = html.replace(urlRegex, (url) => {
-                // Use primary color for links
-                return `<a href="${url}" target="_blank" class="underline hover:opacity-80" style="color: var(--primary-dark);">${url}</a>`;
+                return `<a href="${url}" target="_blank" class="text-purple-600 underline hover:text-purple-800">${url}</a>`;
             });
             return html;
         }
 
-        // --- نمایش پیام در چت ---
         function displayMessage(text, sender) {
             const messageWrapper = document.createElement('div');
-            messageWrapper.classList.add('flex');
+            messageWrapper.classList.add('flex', 'p-1');
 
             if (sender === 'user') {
                 const messageBubble = document.createElement('div');
@@ -213,51 +250,42 @@
                 messageBubble.textContent = text;
                 messageWrapper.appendChild(messageBubble);
 
-            } else { // bot
+            } else {
                 const botMessageWrapper = document.createElement('div');
-                botMessageWrapper.classList.add('flex', 'flex-col', 'items-end', 'gap-2'); 
+                botMessageWrapper.classList.add('flex', 'flex-col', 'items-start', 'gap-2', 'w-full');
 
-                // Main Message
                 const messageBubble = document.createElement('div');
                 messageBubble.classList.add('message-bubble', 'bot-message');
                 messageBubble.innerHTML = renderMarkdownAndLinks(text);
-                
-                // Buttons: Summarize only
+
                 const actionButtonsContainer = document.createElement('div');
-                actionButtonsContainer.classList.add('action-buttons', 'flex', 'gap-2', 'pl-4');
+                actionButtonsContainer.classList.add('flex', 'gap-2', 'pr-4');
 
                 const summarizeButton = document.createElement('button');
                 summarizeButton.classList.add('action-button');
-                summarizeButton.innerHTML = '<span class="ml-1">📄</span> خلاصه‌سازی';
+                summarizeButton.innerHTML = '📄 خلاصه‌سازی';
                 summarizeButton.onclick = async (e) => { await summarizeForButton(e.currentTarget); };
                 actionButtonsContainer.appendChild(summarizeButton);
 
-                // Layout: Buttons on top, bubble on bottom
-                botMessageWrapper.appendChild(actionButtonsContainer);
                 botMessageWrapper.appendChild(messageBubble);
+                botMessageWrapper.appendChild(actionButtonsContainer);
                 messageWrapper.appendChild(botMessageWrapper);
-                messageWrapper.classList.add('flex-col', 'items-start'); 
             }
 
             chatContainer.appendChild(messageWrapper);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // --- ارسال پیام به بک‌اند و دریافت پاسخ ---
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
 
-            // Hide developer message when sending
-            if (isDevInfoVisible) {
-                displayDeveloperInfo(); 
-            }
-
             displayMessage(message, 'user');
             userInput.value = '';
 
-            userInput.disabled = true; sendButton.disabled = true;
-            messageBox.textContent = 'در حال پردازش درخواست شما...'; messageBox.classList.remove('hidden');
+            userInput.disabled = true;
+            sendButton.disabled = true;
+            messageBox.classList.remove('hidden');
 
             try {
                 const resp = await fetch(API_URL, {
@@ -265,6 +293,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_message: message })
                 });
+                
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
                 const data = await resp.json();
@@ -273,26 +302,28 @@
 
             } catch (err) {
                 console.error("API error:", err);
-                displayMessage('⚠️ خطا در اتصال به سرور. کنسول را بررسی کنید.', 'bot');
+                displayMessage('⚠️ خطا در اتصال به سرور. لطفاً دوباره تلاش کنید.', 'bot');
             } finally {
-                userInput.disabled = false; sendButton.disabled = false;
+                userInput.disabled = false;
+                sendButton.disabled = false;
                 messageBox.classList.add('hidden');
                 userInput.focus();
             }
         }
 
-        // --- خلاصه‌سازی برای یک پیام خاص ---
         async function summarizeForButton(button) {
-            const wrapper = button.closest('.flex.flex-col.items-start');
+            const wrapper = button.closest('.flex.flex-col');
             const messageBubble = wrapper.querySelector('.bot-message');
             const text = messageBubble.textContent.trim();
 
             if (text.length < 50) {
-                displayMessage('⚠️ برای خلاصه‌سازی متن باید حداقل ۵۰ کاراکتر باشد.', 'bot');
+                displayMessage('⚠️ متن باید حداقل ۵۰ کاراکتر باشد.', 'bot');
                 return;
             }
 
-            button.classList.add('loading'); button.disabled = true; const orig = button.innerHTML; button.textContent = '⏳ در حال خلاصه‌سازی...';
+            button.disabled = true;
+            const orig = button.innerHTML;
+            button.innerHTML = '⏳ در حال خلاصه‌سازی...';
 
             try {
                 const resp = await fetch(SUMMARIZE_URL, {
@@ -300,24 +331,28 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text_to_summarize: text })
                 });
-                if (!resp.ok) {
-                    const txt = await resp.text();
-                    throw new Error(`Summarize HTTP ${resp.status}: ${txt.substring(0,200)}`);
-                }
+                
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
                 const data = await resp.json();
                 const summary = data.summary || "خلاصه‌سازی موفقیت‌آمیز نبود.";
-                displayMessage('**خلاصه متن:** ' + summary, 'bot');
+                displayMessage('**📝 خلاصه متن:**\n\n' + summary, 'bot');
 
             } catch (err) {
                 console.error("Summarize error:", err);
-                displayMessage('⚠️ خطای سرویس خلاصه‌سازی. کنسول را بررسی کنید.', 'bot');
+                displayMessage('⚠️ خطای سرویس خلاصه‌سازی.', 'bot');
             } finally {
-                button.classList.remove('loading'); button.disabled = false; button.innerHTML = orig;
+                button.disabled = false;
+                button.innerHTML = orig;
             }
         }
 
-        // Focus on load
         window.onload = () => { userInput.focus(); };
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideAbout();
+        });
     </script>
 </body>
 </html>
