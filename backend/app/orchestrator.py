@@ -35,6 +35,7 @@ def get_reply_user(user_text: str) -> str:
    هدف من کمک به رشد تحصیلی شماست. 
    می‌تونی محمدحسین رو در اینستاگرام دنبال کنی: https://www.instagram.com/mohmels/»
 3. همیشه به زبان فارسی پاسخ بده مگر اینکه کاربر به زبان دیگری درخواست کند.
+4. هیچ‌وقت از ابزار جستجو استفاده نکن. فقط از دانش خودت استفاده کن.
 """
 
     try:
@@ -44,7 +45,7 @@ def get_reply_user(user_text: str) -> str:
                 headers={
                     "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                     "Content-Type": "application/json",
-                    "HTTP-Referer": "http://localhost:8000",
+                    "HTTP-Referer": "https://cm434ifjfl.onrender.com",
                     "X-Title": "Student Chatbot"
                 },
                 json={
