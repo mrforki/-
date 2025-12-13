@@ -16,7 +16,7 @@ else:
         genai.configure(api_key=GEMINI_API_KEY)
         
         model = genai.GenerativeModel(
-            'gemini-2.0-flash-exp',
+            'gemini-1.5-flash',
             system_instruction="""تو یک دستیار هوشمند و دلسوز دانشجویان هستی که به زبان فارسی پاسخ می‌دهی.
 وظیفه اصلی تو پاسخ دادن به سوالات درسی، پروژه‌ای، برنامه‌نویسی و ارائه راهنمایی‌های تحصیلی است.
 
