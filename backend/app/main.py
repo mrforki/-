@@ -25,7 +25,7 @@ SETUP_ERROR = None
 if GEMINI_API_KEY:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
-        chat_model_client = genai.GenerativeModel('gemini-pro')
+        chat_model_client = genai.GenerativeModel('gemini-2.0-flash')
         print("✅ Gemini API initialized successfully.")
     except Exception as e:
         print("⚠️ خطا در مقداردهی Gemini:", e)
@@ -83,5 +83,5 @@ async def health_check():
     return {
         "status": "ok",
         "api_configured": GEMINI_API_KEY is not None,
-        "model": "gemini-pro"
+        "model": "gemini-2.0-flash"
     }
