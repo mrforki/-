@@ -5,9 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from .orchestrator import get_reply_user # این خط تغییری نمی‌کند
-# جایگزینی: sambanova به جای google.generativeai
-from sambanova import SambaNova 
+from .orchestrator import get_reply_user
+# جایگزینی: openai به جای sambanova
+from openai import OpenAI 
 
 load_dotenv()
 
@@ -18,27 +18,27 @@ class UserMessage(BaseModel):
 class SummarizeRequest(BaseModel):
     text_to_summarize: str
 
-# --------------------------- تنظیمات SambaNova ---------------------------
-SAMBANOVA_API_KEY = os.getenv("SAMBANOVA_API_KEY")
-SAMBANOVA_BASE_URL = os.getenv("SAMBANOVA_BASE_URL", "https://api.sambanova.ai/v1")
+# --------------------------- تنظیمات GapGPT ---------------------------
+GAPGPT_API_KEY = os.getenv("GAPGPT_API_KEY")
+GAPGPT_BASE_URL = os.getenv("GAPGPT_BASE_URL", "https://api.gapgpt.app/v1")
 summary_model_client = None
 SETUP_ERROR = None
-# مدل DeepSeek به صورت یک رشته تعریف می‌شود
-MODEL_NAME = "DeepSeek-V3.1-Terminus" 
+# مدل gemini-2.5-pro برای خلاصه‌سازی
+MODEL_NAME = "gemini-2.5-pro" 
 
-if SAMBANOVA_API_KEY:
+if GAPGPT_API_KEY:
     try:
-        # مقداردهی به کلاینت SambaNova
-        summary_model_client = SambaNova(
-            api_key=SAMBANOVA_API_KEY,
-            base_url=SAMBANOVA_BASE_URL,
+        # مقداردهی به کلاینت OpenAI با URL و کلید گپ جی‌پی‌تی
+        summary_model_client = OpenAI(
+            api_key=GAPGPT_API_KEY,
+            base_url=GAPGPT_BASE_URL,
         )
-        print("✅ SambaNova API initialized successfully for summary.")
+        print("✅ GapGPT API initialized successfully for summary.")
     except Exception as e:
-        print("⚠️ خطا در مقداردهی SambaNova:", e)
+        print("⚠️ خطا در مقداردهی GapGPT:", e)
         SETUP_ERROR = str(e)
 else:
-    SETUP_ERROR = "SAMBANOVA_API_KEY یافت نشد."
+    SETUP_ERROR = "GAPGPT_API_KEY یافت نشد."
     print("⚠️ ", SETUP_ERROR)
 
 # --------------------------- اپ اصلی ---------------------------
@@ -65,7 +65,6 @@ async def serve_frontend():
 # --------------------------- چت ---------------------------
 @app.post("/reply")
 async def reply(data: UserMessage):
-    # این تابع از orchestrator.py که در گام بعدی به روز رسانی می‌شود استفاده می‌کند
     return {"response": get_reply_user(data.user_message)}
 
 # --------------------------- خلاصه‌سازی ---------------------------
@@ -78,18 +77,16 @@ async def summarize_text(data: SummarizeRequest):
 
     prompt = f"متن زیر را به فارسی و به صورت خلاصه توضیح بده:\n\n{data.text_to_summarize}"
     
-    # ساختن لیست پیام‌ها برای خلاصه‌سازی
     messages = [
         {"role": "user", "content": prompt},
     ]
 
     try:
-        # فراخوانی API چت SambaNova
+        # فراخوانی API چت GapGPT
         resp = summary_model_client.chat.completions.create(
-            # اینجا نام مدل به صورت رشته (String) قرار گرفت
             model=MODEL_NAME, 
             messages=messages,
-            temperature=0.1, # دمای پایین‌تر برای خلاصه‌سازی دقیق‌تر
+            temperature=0.1, 
         )
         
         if resp.choices and resp.choices[0].message:
@@ -105,7 +102,6 @@ async def summarize_text(data: SummarizeRequest):
 async def health_check():
     return {
         "status": "ok",
-        "api_configured": SAMBANOVA_API_KEY is not None,
-        # اینجا نام مدل به صورت رشته (String) قرار گرفت
+        "api_configured": GAPGPT_API_KEY is not None,
         "model": MODEL_NAME 
     }

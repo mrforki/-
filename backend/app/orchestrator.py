@@ -1,32 +1,32 @@
 import os
 from dotenv import load_dotenv
-# جایگزینی: sambanova به جای google.generativeai
-from sambanova import SambaNova 
+# جایگزینی: openai به جای sambanova
+from openai import OpenAI 
 
 load_dotenv()
 
-# کلید API و URL پیش‌فرض SambaNova
-SAMBANOVA_API_KEY = os.getenv("SAMBANOVA_API_KEY")
-SAMBANOVA_BASE_URL = os.getenv("SAMBANOVA_BASE_URL", "https://api.sambanova.ai/v1") 
+# کلید API و URL گپ جی‌پی‌تی
+GAPGPT_API_KEY = os.getenv("GAPGPT_API_KEY")
+GAPGPT_BASE_URL = os.getenv("GAPGPT_BASE_URL", "https://api.gapgpt.app/v1") 
 
 client = None
 SETUP_ERROR = None
-# مدل DeepSeek برای چت
-MODEL_NAME = 'DeepSeek-V3.1-Terminus' 
+# استفاده از مدل قدرتمند gemini-2.5-pro
+MODEL_NAME = 'gemini-2.5-pro' 
 
-if not SAMBANOVA_API_KEY:
-    print("⚠️ خطا: متغیر محیطی SAMBANOVA_API_KEY تنظیم نشده است!")
-    SETUP_ERROR = "کلید API (SAMBANOVA_API_KEY) یافت نشد."
+if not GAPGPT_API_KEY:
+    print("⚠️ خطا: متغیر محیطی GAPGPT_API_KEY تنظیم نشده است!")
+    SETUP_ERROR = "کلید API (GAPGPT_API_KEY) یافت نشد."
 else:
     try:
-        # مقداردهی به کلاینت SambaNova
-        client = SambaNova(
-            api_key=SAMBANOVA_API_KEY,
-            base_url=SAMBANOVA_BASE_URL,
+        # مقداردهی به کلاینت OpenAI با URL و کلید گپ جی‌پی‌تی
+        client = OpenAI(
+            api_key=GAPGPT_API_KEY,
+            base_url=GAPGPT_BASE_URL,
         )
-        print("✅ SambaNova API initialized successfully.")
+        print("✅ GapGPT API initialized successfully.")
     except Exception as e:
-        print(f"⚠️ خطا در تنظیم SambaNova API: {str(e)}")
+        print(f"⚠️ خطا در تنظیم GapGPT API: {str(e)}")
         SETUP_ERROR = f"خطا در تنظیمات اولیه مدل: {str(e)}"
 
 # System Instruction
@@ -44,7 +44,7 @@ SYSTEM_INSTRUCTION = """تو یک دستیار هوشمند و دلسوز دان
 
 def get_reply_user(user_text: str) -> str:
     """
-    این تابع از SambaNova API برای دریافت پاسخ چت استفاده می‌کند
+    این تابع از GapGPT API برای دریافت پاسخ چت استفاده می‌کند
     """
     global client, SETUP_ERROR
     
@@ -59,20 +59,19 @@ def get_reply_user(user_text: str) -> str:
             {"role": "user", "content": user_text},
         ]
         
-        # فراخوانی API چت SambaNova
+        # فراخوانی API چت (سازگار با OpenAI)
         response = client.chat.completions.create(
-            model=MODEL_NAME, # استفاده از مدل DeepSeek
+            model=MODEL_NAME, 
             messages=messages,
             temperature=0.7, 
             top_p=0.9
         )
         
-        # استخراج پاسخ از شیء بازگشتی
+        # استخراج پاسخ از شیء بازگشتی (ساختار OpenAI)
         if response.choices and response.choices[0].message:
             return response.choices[0].message.content.strip()
         
         return "⚠️ پاسخ مناسبی از مدل دریافت نشد."
     
     except Exception as e:
-        # در SambaNova، خطاهای ایمنی یا فیلترینگ ممکن است به صورت استثنا (Exception) رخ دهند
-        return f"❌ خطا در گرفتن پاسخ از SambaNova: {str(e)}"
+        return f"❌ خطا در گرفتن پاسخ از GapGPT: {str(e)}"
