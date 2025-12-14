@@ -1,23 +1,36 @@
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
+# جایگزینی: sambanova به جای google.generativeai
+from sambanova import SambaNova 
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-model = None
-SETUP_ERROR = None
+# کلید API و URL پیش‌فرض SambaNova
+SAMBANOVA_API_KEY = os.getenv("SAMBANOVA_API_KEY")
+SAMBANOVA_BASE_URL = os.getenv("SAMBANOVA_BASE_URL", "https://api.sambanova.ai/v1") 
 
-if not GEMINI_API_KEY:
-    print("⚠️ خطا: متغیر محیطی GEMINI_API_KEY تنظیم نشده است!")
-    SETUP_ERROR = "کلید API (GEMINI_API_KEY) یافت نشد."
+client = None
+SETUP_ERROR = None
+# مدل DeepSeek برای چت
+MODEL_NAME = 'DeepSeek-V3.1-Terminus' 
+
+if not SAMBANOVA_API_KEY:
+    print("⚠️ خطا: متغیر محیطی SAMBANOVA_API_KEY تنظیم نشده است!")
+    SETUP_ERROR = "کلید API (SAMBANOVA_API_KEY) یافت نشد."
 else:
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        
-        model = genai.GenerativeModel(
-            'gemini-2.0-flash',
-            system_instruction="""تو یک دستیار هوشمند و دلسوز دانشجویان هستی که به زبان فارسی پاسخ می‌دهی.
+        # مقداردهی به کلاینت SambaNova
+        client = SambaNova(
+            api_key=SAMBANOVA_API_KEY,
+            base_url=SAMBANOVA_BASE_URL,
+        )
+        print("✅ SambaNova API initialized successfully.")
+    except Exception as e:
+        print(f"⚠️ خطا در تنظیم SambaNova API: {str(e)}")
+        SETUP_ERROR = f"خطا در تنظیمات اولیه مدل: {str(e)}"
+
+# System Instruction
+SYSTEM_INSTRUCTION = """تو یک دستیار هوشمند و دلسوز دانشجویان هستی که به زبان فارسی پاسخ می‌دهی.
 وظیفه اصلی تو پاسخ دادن به سوالات درسی، پروژه‌ای، برنامه‌نویسی و ارائه راهنمایی‌های تحصیلی است.
 
 قواعد پاسخگویی مهم:
@@ -28,27 +41,38 @@ else:
    می‌تونی محمدحسین رو در اینستاگرام دنبال کنی: https://www.instagram.com/mohmels/»
 3. همیشه به زبان فارسی پاسخ بده مگر اینکه کاربر به زبان دیگری درخواست کند.
 """
-        )
-        print("✅ Gemini API initialized successfully")
-    except Exception as e:
-        print(f"⚠️ خطا در تنظیم Gemini API: {str(e)}")
-        SETUP_ERROR = f"خطا در تنظیمات اولیه مدل: {str(e)}"
 
 def get_reply_user(user_text: str) -> str:
     """
-    این تابع از Google Gemini API برای دریافت پاسخ استفاده می‌کند
+    این تابع از SambaNova API برای دریافت پاسخ چت استفاده می‌کند
     """
-    if model is None:
+    global client, SETUP_ERROR
+    
+    if client is None:
         detailed_error = SETUP_ERROR if SETUP_ERROR else "خطای نامشخص در تنظیمات."
         return f"⚠️ خطای تنظیمات بک‌اند: {detailed_error}"
 
     try:
-        response = model.generate_content(user_text)
+        # ساختن لیست پیام‌ها شامل System Instruction و پیام کاربر
+        messages = [
+            {"role": "system", "content": SYSTEM_INSTRUCTION},
+            {"role": "user", "content": user_text},
+        ]
         
-        if response.candidates and response.candidates[0].finish_reason.name == 'SAFETY':
-            return "⚠️ به دلیل خط‌مشی‌های ایمنی، امکان پاسخگویی به این سوال وجود ندارد."
+        # فراخوانی API چت SambaNova
+        response = client.chat.completions.create(
+            model=MODEL_NAME, # استفاده از مدل DeepSeek
+            messages=messages,
+            temperature=0.7, 
+            top_p=0.9
+        )
         
-        return response.text.strip()
+        # استخراج پاسخ از شیء بازگشتی
+        if response.choices and response.choices[0].message:
+            return response.choices[0].message.content.strip()
+        
+        return "⚠️ پاسخ مناسبی از مدل دریافت نشد."
     
     except Exception as e:
-        return f"❌ خطا در گرفتن پاسخ از Gemini: {str(e)}"
+        # در SambaNova، خطاهای ایمنی یا فیلترینگ ممکن است به صورت استثنا (Exception) رخ دهند
+        return f"❌ خطا در گرفتن پاسخ از SambaNova: {str(e)}"
