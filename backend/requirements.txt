@@ -1,6 +1,6 @@
 fastapi
 uvicorn[standard]
 python-dotenv
-openai
+openai>=1.6.0
 pydantic
 pytz
